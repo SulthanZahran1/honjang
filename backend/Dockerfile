@@ -12,7 +12,10 @@ COPY pyproject.toml ./
 COPY app/ ./app/
 COPY static/ ./static/
 
-# Install dependencies
+# Install CPU-only torch first (silero-vad pulls torch as dep — avoid 1.2GB CUDA bloat)
+RUN pip install --no-cache-dir torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+
+# Install remaining dependencies
 RUN pip install --no-cache-dir -e ".[dev]"
 
 # Expose port
