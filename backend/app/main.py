@@ -10,9 +10,11 @@ Provides:
 from __future__ import annotations
 
 import logging
+import os
 
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 
 from app.config import Settings, settings as default_settings
 from app.session.store import SessionStore
@@ -53,20 +55,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         await session_store.init()
         logger.info("Session store initialized at %s", s.sqlite_path)
 
-    @app.get("/")
-    async def root() -> dict:
-        return {
-            "service": "honjang",
-            "description": "English ↔ Korean honorific voice translator",
-            "version": "0.1.0",
-            "endpoints": {
-                "health": "/health",
-                "websocket": "/ws",
-                "sessions": "/api/sessions",
-                "session_turns": "/api/sessions/{id}/turns",
-            },
-            "repo": "https://github.com/SulthanZahran1/honjang",
-        }
+    @app.get("/", response_class=HTMLResponse)
+    async def root() -> str:
+        index_path = os.path.join(os.path.dirname(__file__), "..", "static", "index.html")
+        with open(index_path, encoding="utf-8") as f:
+            return f.read()
 
     @app.get("/health")
     async def health() -> dict:
