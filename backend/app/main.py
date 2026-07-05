@@ -53,6 +53,21 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         await session_store.init()
         logger.info("Session store initialized at %s", s.sqlite_path)
 
+    @app.get("/")
+    async def root() -> dict:
+        return {
+            "service": "honjang",
+            "description": "English ↔ Korean honorific voice translator",
+            "version": "0.1.0",
+            "endpoints": {
+                "health": "/health",
+                "websocket": "/ws",
+                "sessions": "/api/sessions",
+                "session_turns": "/api/sessions/{id}/turns",
+            },
+            "repo": "https://github.com/SulthanZahran1/honjang",
+        }
+
     @app.get("/health")
     async def health() -> dict:
         return {"status": "ok", "service": "honjang-backend", "version": "0.1.0"}
