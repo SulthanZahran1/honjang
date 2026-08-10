@@ -146,3 +146,35 @@ A new conversation period created when Honjang is opened or restarted. Non-live 
 
 ### Advanced Mode
 Voice Agent mode and provider-level tuning that remain available without competing with the primary Pipeline conversation loop. Mode switching is secondary to starting and continuing the conversation.
+
+## Conversation States
+
+### Offline
+No live session exists. The primary action is `Start conversation`; the page never requests microphone access from this resting state.
+
+### Connecting
+A live session is being established. The conversation surface remains visible, but speaking is unavailable until the session becomes Ready.
+
+### Permission Pending
+The browser is waiting for microphone permission after the live session is ready to begin. The product explains the next action without treating permission as a translation failure.
+
+### Permission Denied
+Microphone access was refused or unavailable. The user can try again while keeping the current conversation surface intact.
+
+### Listening
+Honjang is capturing one utterance. Interim text may appear in the current turn, and the user can stop the utterance explicitly.
+
+### Translating
+The utterance has ended and translation is in progress. The current transcript remains visible while the next translated turn is prepared.
+
+### Playback
+The translated audio is being played. The user can stop playback, which returns the session to Ready to Speak.
+
+### Recoverable Disconnect
+A live connection ended unexpectedly. Existing turns remain visible and the primary recovery action is `Reconnect`; a new session is not silently created.
+
+### Session End
+The user deliberately ends the live session. The transcript remains available for the current view, while the next primary action becomes `New conversation`.
+
+### Conversation Ledger
+The live transcript and translated turns remain visible through connecting, permission, listening, translating, playback, and recoverable failure states. Session history is separate and never blocks a fresh live session.
