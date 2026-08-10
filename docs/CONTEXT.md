@@ -124,3 +124,25 @@ Speech-to-Text provider. Nova-3 multilingual model for streaming transcription w
 
 ### ElevenLabs
 Text-to-Speech provider. Flash v2.5 (default, 75ms latency, 32 languages incl. Korean) and v3 (optional, 70+ languages, more expressive).
+
+---
+
+## Conversation Journey
+
+### Guided Workplace Interpreter
+The canonical first-run framing for Honjang. The primary user is an English-speaking junior communicating with a Korean senior colleague, with honorific awareness treated as part of the translation context rather than an incidental option. The product remains two-way EN↔KO.
+
+### Start Conversation
+The explicit action that begins a live interpreting session. It establishes readiness before microphone permission is requested. Loading the page never starts a live session or captures audio by itself.
+
+### Conversation Loop
+The repeatable Pipeline cycle: Ready to Speak, capture one utterance, translate it, play the translated speech, then return to Ready to Speak. The transcript remains part of the current conversation while the next turn is prepared.
+
+### Ready to Speak
+The stable state in which the session is available and the primary next action is speaking. It is also the resting state after a translation and playback complete.
+
+### Fresh Session
+A new conversation period created when Honjang is opened or restarted. Non-live preferences may be restored, but microphone capture and an old live conversation never resume automatically.
+
+### Advanced Mode
+Voice Agent mode and provider-level tuning that remain available without competing with the primary Pipeline conversation loop. Mode switching is secondary to starting and continuing the conversation.
