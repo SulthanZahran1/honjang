@@ -54,8 +54,8 @@
   <div class="frame-wrap"><iframe id="f" width="1280" height="760" title="prototype"></iframe></div>
   <div class="toolbar">
     <div class="grp" id="gV">
-      <button class="chip on" data-k="v" data-val="1">V1 STAGE</button>
-      <button class="chip" data-k="v" data-val="2">V2 RAIL</button>
+      <button class="chip" data-k="v" data-val="1">V1 STAGE</button>
+      <button class="chip on" data-k="v" data-val="2">V2 RAIL</button>
       <button class="chip" data-k="v" data-val="3">V3 LEDGER</button>
     </div>
     <div class="grp" id="gW">
@@ -102,7 +102,7 @@
 </div>
 
 <script>
-var state = { v: 1, w: 1280, s: "ready", a: 0, p: "dancheong" };
+var state = { v: 2, w: 1280, s: "ready", a: 0, p: "dancheong" };
 (function () {
   var q = new URLSearchParams(location.search);
   if (q.get("v")) state.v = Math.min(3, Math.max(1, +q.get("v") || 1));
@@ -124,12 +124,13 @@ var CONTRACTS = {
     "One layout for both breakpoints, only the drawer sheet changes. Lowest implementation effort."
   ],
   2: [
-    "Desktop 1000px+: grid 1fr 300px. Stage left, live rail right.",
+    "LOCKED - V2 RAIL is the selected composition.",
+    "Desktop >=1000px: grid 1fr 300px. Stage left, live rail right.",
     "Rail holds only live essentials: status, direction, politeness. Provider / VAD / Agent stay in the drawer.",
     "Below 1000px: rail collapses into a LIVE group at the top of the drawer. Stage is identical to V1 mobile.",
     "Rail status mirrors the dock status, so state is visible in two places on desktop.",
-    "Recording / playback behavior identical to V1.",
-    "Medium effort: one extra rail plus its collapse rule."
+    "Recording / playback behavior: stage dims, mic pulses, transcript stays fully visible; playing turn shows progress hairline.",
+    "Palette: dancheong (warm plum-black #100e12, vermillion #d4583a single accent)."
   ],
   3: [
     "Desktop 1100px+: two panes, ledger 340px + stage 1fr.",
