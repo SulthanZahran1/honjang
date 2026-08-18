@@ -100,6 +100,9 @@ var state = { v: 1, w: 1280, s: "setup", a: 0 };
   if (q.get("v")) state.v = Math.min(3, Math.max(1, +q.get("v") || 1));
   if (q.get("w")) state.w = +q.get("w") || 1280;
   if (q.get("s")) state.s = q.get("s");
+  // Narrow viewports (phones) default to the mobile composition instead of
+  // clipping the 1280px desktop preview.
+  if (!q.get("w") && window.innerWidth < 900) state.w = 390;
 })();
 
 var CONTRACTS = {
@@ -138,7 +141,10 @@ function buildApp() {
 
 function render() {
   var f = document.getElementById("f");
-  f.width = state.w;
+  // Clamp the frame to the available width so a narrow window never clips it.
+  var wrap = document.querySelector(".frame-wrap");
+  var avail = wrap ? wrap.clientWidth : state.w;
+  f.width = Math.max(320, Math.min(state.w, avail - 4));
   f.srcdoc = buildApp();
   var r = "v=" + state.v + " viewport=" + state.w + " state=" + state.s + " annotate=" + (state.a ? "on" : "off") + " contract=closed";
   document.getElementById("readout").textContent = r;
