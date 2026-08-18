@@ -80,10 +80,15 @@ class DeepgramSTT:
 
     async def connect(self) -> None:
         """Open WebSocket connection to Deepgram streaming endpoint."""
-        from deepgram import AsyncDeepgramClient, LiveOptions, LiveTranscriptionEvents
+        from deepgram import (
+            AsyncLiveClient,
+            DeepgramClientOptions,
+            LiveOptions,
+            LiveTranscriptionEvents,
+        )
 
-        client = AsyncDeepgramClient(self.api_key)
-        self._dg_connection = client.listen.asyncwebsocket.v("1")
+        config = DeepgramClientOptions(api_key=self.api_key)
+        self._dg_connection = AsyncLiveClient(config)
 
         # Register event handlers
         async def on_open(client, open_event, **kwargs):

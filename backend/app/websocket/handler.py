@@ -68,17 +68,11 @@ class WebSocketHandler:
         """
         await ws.accept()
 
-        # Create session
-        session_id = await self.session_store.create_session(
-            llm_model=self.settings.default_llm_model
-        )
-        await ws.send_text(
-            SessionStart(session_id=session_id).model_dump_json()
-        )
-
-        # Mutable session state
+        # Mutable session state — use placeholder session_id until STT connects
+        # and we actually create the DB row. This prevents orphan sessions if
+        # STT connection fails.
         state = SessionState(
-            session_id=session_id,
+            session_id=0,  # temporary; replaced after STT connects
             settings=self.settings,
             session_store=self.session_store,
             ws=ws,
@@ -90,7 +84,7 @@ class WebSocketHandler:
         stt.on_utterance_end = state.handle_utterance_end
         stt.on_error = state.handle_stt_error
 
-        # Connect Deepgram
+        # Connect Deepgram FIRST — don't create DB session until STT is up
         try:
             await stt.connect()
         except Exception as exc:
@@ -98,9 +92,17 @@ class WebSocketHandler:
             await ws.send_text(
                 Error(message=f"STT connection failed: {exc}", code="stt_connect").model_dump_json()
             )
-            await self.session_store.end_session(session_id)
             await ws.close()
             return
+
+        # STT connected — now safe to create the DB session
+        session_id = await self.session_store.create_session(
+            llm_model=self.settings.default_llm_model
+        )
+        state.session_id = session_id
+        await ws.send_text(
+            SessionStart(session_id=session_id).model_dump_json()
+        )
 
         # Main receive loop
         try:
