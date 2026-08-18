@@ -9,33 +9,36 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: #05090d; color: #c8d2d8;
     font: 12px/1.5 ui-monospace, "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace; }
+  :root { --sh-acc:#e4bd63; --sh-acc-ink:#171307; --sh-bg:#0b1b28; }
+  .shell[data-p="dancheong"] { --sh-acc:#d4583a; --sh-acc-ink:#200a04; --sh-bg:#100e12; }
+  .shell[data-p="smoke"] { --sh-acc:#6fb1e0; --sh-acc-ink:#062033; --sh-bg:#0b0f14; }
   .shell { display: flex; flex-direction: column; height: 100%; }
   .shell-head { display: flex; align-items: baseline; gap: 14px; padding: 10px 16px; border-bottom: 1px solid #16222b; }
-  .shell-head .t { color: #e4bd63; letter-spacing: 2px; font-size: 11px; font-weight: 700; }
+  .shell-head .t { color: var(--sh-acc); letter-spacing: 2px; font-size: 11px; font-weight: 700; }
   .shell-head .s { color: #5b7180; font-size: 11px; }
   .readout { margin-left: auto; color: #5b7180; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .frame-wrap { flex: 1; min-height: 0; display: flex; justify-content: center; padding: 20px 0; overflow: auto;
     background: repeating-linear-gradient(0deg, #070c11 0 1px, transparent 1px 26px),
                 repeating-linear-gradient(90deg, #070c11 0 1px, transparent 1px 26px); }
-  iframe { border: 1px solid #1c2b36; background: #0b1b28; box-shadow: 0 30px 80px rgba(0,0,0,.5); }
+  iframe { border: 1px solid #1c2b36; background: var(--sh-bg); box-shadow: 0 30px 80px rgba(0,0,0,.5); }
   .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 16px; border-top: 1px solid #16222b; }
   .grp { display: flex; gap: 4px; align-items: center; }
   .grp + .grp { margin-left: 6px; padding-left: 12px; border-left: 1px solid #1c2b36; }
   .chip { border: 1px solid #24384a; background: #0b141c; color: #8fa3b0; border-radius: 5px; padding: 5px 9px;
     font: inherit; font-size: 11px; cursor: pointer; }
   .chip:hover { border-color: #3a5568; color: #e8edf0; }
-  .chip.on { background: #e4bd63; border-color: #e4bd63; color: #171307; font-weight: 700; }
+  .chip.on { background: var(--sh-acc); border-color: var(--sh-acc); color: var(--sh-acc-ink); font-weight: 700; }
   .hint { color: #3d5260; font-size: 10px; margin-left: auto; }
   .contract { position: fixed; top: 0; right: 0; bottom: 0; width: 430px; max-width: 94vw; background: #0a1219;
     border-left: 1px solid #1c2b36; padding: 20px 20px 28px; overflow-y: auto; z-index: 60;
     transform: translateX(102%); transition: transform .25s cubic-bezier(.16,1,.3,1); }
   .contract.open { transform: none; }
-  .contract h2 { margin: 0 0 2px; color: #e4bd63; font-size: 12px; letter-spacing: 2px; }
+  .contract h2 { margin: 0 0 2px; color: var(--sh-acc); font-size: 12px; letter-spacing: 2px; }
   .contract .csub { color: #5b7180; font-size: 10px; margin-bottom: 14px; }
   .contract h3 { color: #e9edf0; font-size: 11px; letter-spacing: 1px; margin: 18px 0 6px; text-transform: uppercase; }
   .contract ul { margin: 0 0 8px; padding-left: 16px; }
   .contract li { color: #aebcc4; font-size: 11px; line-height: 1.6; margin-bottom: 5px; }
-  .contract .lock { color: #e4bd63; }
+  .contract .lock { color: var(--sh-acc); }
   .contract .x { position: absolute; top: 12px; right: 12px; background: none; border: 1px solid #24384a;
     color: #8fa3b0; border-radius: 5px; padding: 4px 8px; font: inherit; font-size: 10px; cursor: pointer; }
   .contract .x:hover { color: #e8edf0; border-color: #3a5568; }
@@ -59,6 +62,11 @@
       <button class="chip on" data-k="w" data-val="1280">DESK 1280</button>
       <button class="chip" data-k="w" data-val="390">MOB 390</button>
     </div>
+    <div class="grp" id="gP">
+      <button class="chip on" data-k="p" data-val="marine">MARINE</button>
+      <button class="chip" data-k="p" data-val="dancheong">DANCHEONG</button>
+      <button class="chip" data-k="p" data-val="smoke">SMOKE</button>
+    </div>
     <div class="grp" id="gS">
       <button class="chip on" data-k="s" data-val="setup">SETUP</button>
       <button class="chip" data-k="s" data-val="ready">READY</button>
@@ -81,7 +89,7 @@
 
   <h3>Shared - locked</h3>
   <ul>
-    <li>One theme: deep marine #0b1b28, signal yellow #e4bd63, mono labels, hairline borders. No gradients, glass, or neon.</li>
+    <li>One theme per palette: single accent, mono labels, hairline borders. No gradients, glass, or neon. Switch palettes with the chips (or P key).</li>
     <li>Pre-Start setup card holds the five everyday fields (direction, politeness, your role, senior's name, context). Collapses after START.</li>
     <li>Drawer = Settings: Mode at top, then Provider, VAD, Agent behavior groups. History is a separate top-bar surface, never inside the drawer.</li>
     <li>Status chip and dock label the state in words: offline, connecting, permission, ready, listening, translating, playback, disconnected, ended.</li>
@@ -94,12 +102,13 @@
 </div>
 
 <script>
-var state = { v: 1, w: 1280, s: "ready", a: 0 };
+var state = { v: 1, w: 1280, s: "ready", a: 0, p: "marine" };
 (function () {
   var q = new URLSearchParams(location.search);
   if (q.get("v")) state.v = Math.min(3, Math.max(1, +q.get("v") || 1));
   if (q.get("w")) state.w = +q.get("w") || 1280;
   if (q.get("s")) state.s = q.get("s");
+  if (q.get("p")) state.p = q.get("p");
   // Narrow viewports (phones) default to the mobile composition instead of
   // clipping the 1280px desktop preview.
   if (!q.get("w") && window.innerWidth < 900) state.w = 390;
@@ -133,14 +142,40 @@ var CONTRACTS = {
 };
 
 function buildApp() {
+  var p = PALETTES[state.p] || PALETTES.marine;
+  var cssVars = ":root{--bg:" + p.bg + ";--el:" + p.el + ";--el2:" + p.el2 + ";--bd:" + p.bd +
+    ";--bd2:" + p.bd2 + ";--ink:" + p.ink + ";--mut:" + p.mut + ";--dim:" + p.dim +
+    ";--acc:" + p.acc + ";--acc-ink:" + p.accInk + ";--brass:" + p.brass +
+    ";--warn:" + p.warn + ";--bad:" + p.bad + ";}";
   return APP
+    .replace("__PALETTE__", cssVars)
     .replace("__V__", state.v)
     .replace("__S__", state.s)
     .replace("__A__", state.a ? "1" : "0");
 }
 
+var PALETTES = {
+  marine: {
+    bg: "#0b1b28", el: "#0f2230", el2: "#132a3a", bd: "#1d3445", bd2: "#2a4557",
+    ink: "#e9edf0", mut: "#8fa3b0", dim: "#5b7180",
+    acc: "#e4bd63", accInk: "#191304", brass: "#b39a5e", warn: "#d9a05b", bad: "#c96f5f"
+  },
+  dancheong: {
+    bg: "#100e12", el: "#18151b", el2: "#201b23", bd: "#2f2731", bd2: "#453a47",
+    ink: "#f3eae4", mut: "#b39b8e", dim: "#7d6a5e",
+    acc: "#d4583a", accInk: "#200a04", brass: "#c98a5b", warn: "#d9a05b", bad: "#c96f5f"
+  },
+  smoke: {
+    bg: "#0b0f14", el: "#10161d", el2: "#151d26", bd: "#1f2a36", bd2: "#2e3d4e",
+    ink: "#e8eef4", mut: "#93a5b5", dim: "#5f7386",
+    acc: "#6fb1e0", accInk: "#062033", brass: "#7d9bb5", warn: "#d9a05b", bad: "#c96f5f"
+  }
+};
+
 function render() {
   var f = document.getElementById("f");
+  var shell = document.querySelector(".shell");
+  shell.setAttribute("data-p", state.p);
   // Clamp the frame to the available size so a narrow window never clips it.
   var wrap = document.querySelector(".frame-wrap");
   var avail = wrap ? wrap.clientWidth : state.w;
@@ -148,7 +183,7 @@ function render() {
   f.width = Math.max(320, Math.min(state.w, avail - 4));
   f.height = Math.max(480, Math.min(760, availH - 4));
   f.srcdoc = buildApp();
-  var r = "v=" + state.v + " viewport=" + state.w + " state=" + state.s + " annotate=" + (state.a ? "on" : "off") + " contract=closed";
+  var r = "v=" + state.v + " viewport=" + state.w + " state=" + state.s + " palette=" + state.p + " annotate=" + (state.a ? "on" : "off") + " contract=closed";
   document.getElementById("readout").textContent = r;
   // chips
   document.querySelectorAll(".chip[data-k]").forEach(function (c) {
@@ -156,6 +191,7 @@ function render() {
     var on = k === "v" && +c.getAttribute("data-val") === state.v ||
              k === "w" && +c.getAttribute("data-val") === state.w ||
              k === "s" && c.getAttribute("data-val") === state.s ||
+             k === "p" && c.getAttribute("data-val") === state.p ||
              k === "a" && state.a === 1;
     c.classList.toggle("on", !!on);
   });
@@ -177,6 +213,7 @@ document.querySelectorAll(".chip[data-k]").forEach(function (c) {
     if (k === "v") state.v = +c.getAttribute("data-val");
     if (k === "w") state.w = +c.getAttribute("data-val");
     if (k === "s") state.s = c.getAttribute("data-val");
+    if (k === "p") state.p = c.getAttribute("data-val");
     if (k === "a") state.a = state.a ? 0 : 1;
     render();
   });
@@ -193,6 +230,7 @@ document.addEventListener("keydown", function (e) {
   if (e.key === "3") state.v = 3;
   if (e.key === "d" || e.key === "D") state.w = 1280;
   if (e.key === "m" || e.key === "M") state.w = 390;
+  if (e.key === "p" || e.key === "P") state.p = { marine: "dancheong", dancheong: "smoke", smoke: "marine" }[state.p];
   if (e.key === "a" || e.key === "A") state.a = state.a ? 0 : 1;
   if (e.key === "c" || e.key === "C") document.getElementById("contract").classList.toggle("open");
   render();
@@ -205,9 +243,7 @@ var APP = `<!doctype html>
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
-  :root { --bg:#0b1b28; --el:#0f2230; --el2:#132a3a; --bd:#1d3445; --bd2:#2a4557;
-    --ink:#e9edf0; --mut:#8fa3b0; --dim:#5b7180; --acc:#e4bd63; --acc-ink:#191304;
-    --brass:#b39a5e; --warn:#d9a05b; --bad:#c96f5f; }
+  __PALETTE__
   body { background: var(--bg); color: var(--ink);
     font: 13px/1.55 ui-monospace, "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
     -webkit-font-smoothing: antialiased; }
