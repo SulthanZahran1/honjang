@@ -63,8 +63,8 @@
       <button class="chip" data-k="w" data-val="390">MOB 390</button>
     </div>
     <div class="grp" id="gP">
-      <button class="chip on" data-k="p" data-val="marine">MARINE</button>
-      <button class="chip" data-k="p" data-val="dancheong">DANCHEONG</button>
+      <button class="chip" data-k="p" data-val="marine">MARINE</button>
+      <button class="chip on" data-k="p" data-val="dancheong">DANCHEONG</button>
       <button class="chip" data-k="p" data-val="smoke">SMOKE</button>
     </div>
     <div class="grp" id="gS">
@@ -102,7 +102,7 @@
 </div>
 
 <script>
-var state = { v: 1, w: 1280, s: "ready", a: 0, p: "marine" };
+var state = { v: 1, w: 1280, s: "ready", a: 0, p: "dancheong" };
 (function () {
   var q = new URLSearchParams(location.search);
   if (q.get("v")) state.v = Math.min(3, Math.max(1, +q.get("v") || 1));
