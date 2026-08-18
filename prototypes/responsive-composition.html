@@ -14,7 +14,7 @@
   .shell-head .t { color: #e4bd63; letter-spacing: 2px; font-size: 11px; font-weight: 700; }
   .shell-head .s { color: #5b7180; font-size: 11px; }
   .readout { margin-left: auto; color: #5b7180; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .frame-wrap { flex: 1; min-height: 0; display: flex; justify-content: center; padding: 20px 0; overflow: hidden;
+  .frame-wrap { flex: 1; min-height: 0; display: flex; justify-content: center; padding: 20px 0; overflow: auto;
     background: repeating-linear-gradient(0deg, #070c11 0 1px, transparent 1px 26px),
                 repeating-linear-gradient(90deg, #070c11 0 1px, transparent 1px 26px); }
   iframe { border: 1px solid #1c2b36; background: #0b1b28; box-shadow: 0 30px 80px rgba(0,0,0,.5); }
@@ -141,10 +141,12 @@ function buildApp() {
 
 function render() {
   var f = document.getElementById("f");
-  // Clamp the frame to the available width so a narrow window never clips it.
+  // Clamp the frame to the available size so a narrow window never clips it.
   var wrap = document.querySelector(".frame-wrap");
   var avail = wrap ? wrap.clientWidth : state.w;
+  var availH = wrap ? wrap.clientHeight : 760;
   f.width = Math.max(320, Math.min(state.w, avail - 4));
+  f.height = Math.max(480, Math.min(760, availH - 4));
   f.srcdoc = buildApp();
   var r = "v=" + state.v + " viewport=" + state.w + " state=" + state.s + " annotate=" + (state.a ? "on" : "off") + " contract=closed";
   document.getElementById("readout").textContent = r;
