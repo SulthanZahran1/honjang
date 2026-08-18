@@ -94,7 +94,7 @@
 </div>
 
 <script>
-var state = { v: 1, w: 1280, s: "setup", a: 0 };
+var state = { v: 1, w: 1280, s: "ready", a: 0 };
 (function () {
   var q = new URLSearchParams(location.search);
   if (q.get("v")) state.v = Math.min(3, Math.max(1, +q.get("v") || 1));
@@ -233,7 +233,7 @@ var APP = `<!doctype html>
   .stage-inner { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   /* ---------- setup card ---------- */
   .setup { position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center;
-    background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(2px); padding: 20px; }
+    background: transparent; padding: 20px; }
   .setup-inner { width: 100%; max-width: 520px; border: 1px solid var(--bd2); border-radius: 12px;
     background: var(--el); padding: 26px; }
   .eyebrow { color: var(--acc); font-size: 10px; letter-spacing: 3px; margin-bottom: 10px; }
@@ -253,7 +253,7 @@ var APP = `<!doctype html>
   .start:active { transform: scale(.985); }
   .ghost { width: 100%; background: none; border: none; color: var(--mut); font-size: 10px;
     letter-spacing: 1px; padding: 12px; margin-top: 2px; text-decoration: underline; text-underline-offset: 3px; }
-  .app[data-state="setup"] .stage-inner, .app[data-state="setup"] .dock { filter: blur(1px); opacity: .45; pointer-events: none; }
+  .app[data-state="setup"] .stage-inner, .app[data-state="setup"] .dock { pointer-events: none; }
   .app.live .setup { display: none; }
   /* ---------- turn board ---------- */
   .turnboard { flex: 1; min-height: 0; overflow-y: auto; padding: 18px 20px; }
@@ -558,9 +558,8 @@ var APP = `<!doctype html>
 
 <script>
 (function () {
-  var q = new URLSearchParams(location.search);
   var app = document.getElementById("app");
-  var state = q.get("s") || "setup";
+  var state = app.getAttribute("data-state") || "setup";
   var drawerOpen = false;
 
   var STATES = {
@@ -647,6 +646,9 @@ var APP = `<!doctype html>
   });
 
   setState(state);
+  // Default to a live session so the composition is visible on load; the
+  // SETUP chip re-opens the pre-Start card.
+  if (state !== "setup") app.classList.add("live");
 })();
 <\/script>
 </body>
