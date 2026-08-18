@@ -1,507 +1,464 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#0f1117">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Honjang — EN↔KO Translator</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#100e12">
+<title>Honjang</title>
 <style>
-:root {
-  --bg: #0f1117;
-  --surface: #1a1d27;
-  --surface2: #242736;
-  --border: #2e3348;
-  --text: #e8eaed;
-  --text2: #9aa0b0;
-  --text3: #5c6370;
-  --accent: #6366f1;
-  --accent2: #818cf8;
-  --green: #22c55e;
-  --red: #ef4444;
-  --amber: #f59e0b;
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-top: env(safe-area-inset-top, 0px);
-  --bottom-bar-h: 72px;
-  --top-bar-h: 52px;
-}
-* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--bg); color: var(--text);
-  height: 100dvh; overflow: hidden;
-  display: flex; flex-direction: column;
-}
-button { font-family: inherit; }
-textarea { font-family: inherit; }
+  /* ── dancheong tokens ─────────────────────────────── */
+  :root {
+    --bg: #100e12;          /* base */
+    --el: #18151b;          /* panels: rail, drawer, history */
+    --el2: #201b23;         /* cards, inputs, chips */
+    --bd: #2f2731;          /* hairline borders */
+    --bd2: #453a47;         /* stronger borders */
+    --ink: #f3eae4;         /* primary text */
+    --mut: #b39b8e;         /* muted text */
+    --dim: #7d6a5e;         /* dim labels, placeholders */
+    --acc: #d4583a;         /* vermillion: single accent */
+    --acc-ink: #200a04;     /* text on accent */
+    --brass: #c98a5b;       /* connected / live */
+    --warn: #d9a05b;        /* connecting / translating */
+    --bad: #c96f5f;         /* failure */
+    --mono: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font: 13px/1.55 var(--mono);
+    -webkit-font-smoothing: antialiased;
+    display: flex; flex-direction: column; height: 100%; overflow: hidden;
+  }
+  button { font: inherit; cursor: pointer; }
+  .hidden { display: none !important; }
 
-/* ── TOP BAR ── */
-.top-bar {
-  height: var(--top-bar-h); padding-top: var(--safe-top);
-  padding-left: 16px; padding-right: 12px;
-  display: flex; align-items: center; gap: 8px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  background: var(--bg);
-  z-index: 10;
-}
-.top-bar h1 {
-  font-size: 17px; font-weight: 700;
-  background: linear-gradient(135deg, var(--accent2), #a78bfa);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.top-bar .sub { font-size: 11px; color: var(--text3); margin-left: 2px; }
-.top-bar .spacer { flex: 1; }
-.status-chip {
-  display: flex; align-items: center; gap: 5px;
-  padding: 3px 10px; border-radius: 12px;
-  font-size: 11px; font-weight: 600;
-  white-space: nowrap;
-}
-.status-chip.disconnected { background: rgba(239,68,68,0.12); color: var(--red); }
-.status-chip.connected { background: rgba(34,197,94,0.12); color: var(--green); }
-.status-chip.connecting { background: rgba(245,158,11,0.12); color: var(--amber); }
-.status-dot { width: 6px; height: 6px; border-radius: 50%; }
-.status-dot.red { background: var(--red); }
-.status-dot.green { background: var(--green); }
-.status-dot.amber { background: var(--amber); }
-.gear-btn {
-  width: 36px; height: 36px; border: none; border-radius: 8px;
-  background: transparent; color: var(--text2); font-size: 20px;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: background 0.15s;
-}
-.gear-btn:active { background: var(--surface2); }
+  /* ── top bar ───────────────────────────────────────── */
+  .topbar { display: flex; align-items: center; gap: 10px; height: 56px;
+    padding: 0 16px; border-bottom: 1px solid var(--bd); flex-shrink: 0; }
+  .brand { font-size: 14px; letter-spacing: 3px; font-weight: 700; color: var(--ink); }
+  .brand .sub { color: var(--dim); font-size: 10px; letter-spacing: 1px; margin-left: 8px; }
+  .status-chip { margin-left: auto; display: flex; align-items: center; gap: 7px;
+    font-size: 10px; letter-spacing: 1.5px; color: var(--mut);
+    border: 1px solid var(--bd); border-radius: 999px; padding: 6px 12px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); }
+  .status-chip.connected { color: var(--brass); border-color: var(--bd2); }
+  .status-chip.connected .status-dot { background: var(--brass); }
+  .status-chip.connecting { color: var(--warn); border-color: var(--bd2); }
+  .status-chip.connecting .status-dot { background: var(--warn); }
+  .icon-btn { background: none; border: 1px solid var(--bd); color: var(--mut);
+    font-size: 10px; letter-spacing: 1.5px; border-radius: 7px; padding: 9px 12px; min-height: 40px; }
+  .icon-btn:hover { border-color: var(--bd2); color: var(--ink); }
+  .icon-btn:active { transform: scale(.98); }
 
-/* ── MODE CHIP BAR ── */
-.mode-bar {
-  display: flex; align-items: center; gap: 6px;
-  padding: 6px 16px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0; overflow-x: auto;
-  background: var(--bg);
-}
-.mode-chip {
-  padding: 3px 10px; border-radius: 10px;
-  font-size: 11px; font-weight: 600;
-  border: 1px solid var(--border);
-  background: transparent; color: var(--text2);
-  cursor: pointer; white-space: nowrap;
-  transition: all 0.15s;
-}
-.mode-chip:active { background: var(--surface2); }
-.mode-chip.active { background: var(--accent); color: white; border-color: var(--accent); }
+  /* ── body layout: stage + rail (V2) ────────────────── */
+  .body-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 300px; }
+  .stage { min-width: 0; display: flex; flex-direction: column; }
+  .turnboard { flex: 1; min-height: 0; overflow-y: auto; padding: 18px 20px 10px; }
+  .board-grid { display: grid; grid-template-columns: 1fr 40px 1fr;
+    gap: 8px 12px; max-width: 980px; margin: 0 auto; align-items: start; }
+  .col-h { font-size: 9px; letter-spacing: 3px; color: var(--dim);
+    padding-bottom: 10px; border-bottom: 1px solid var(--bd); }
+  .col-h.en { text-align: left; }
+  .col-h.ko { text-align: right; }
+  .swap { display: flex; align-items: center; justify-content: center; }
+  .swap .dir { writing-mode: vertical-rl; letter-spacing: 2px; color: var(--dim); font-size: 10px; }
+  .turn { border: 1px solid var(--bd); background: var(--el); border-radius: 10px;
+    padding: 12px 14px; min-width: 0; }
+  .turn.en { grid-column: 1; margin-right: 10px; }
+  .turn.ko { grid-column: 3; margin-left: 10px; }
+  .turn.sys { grid-column: 1 / -1; text-align: center; font-size: 11px; color: var(--dim);
+    background: none; border: none; padding: 4px; }
+  .turn .label { font-size: 9px; letter-spacing: 2px; color: var(--dim); display: block; margin-bottom: 6px; }
+  .turn p { margin: 0; font-size: 13px; color: var(--ink); overflow-wrap: anywhere; }
+  .turn .meta { margin-top: 8px; }
+  .turn .badge { font-size: 9px; letter-spacing: 1px; color: var(--mut);
+    border: 1px solid var(--bd); border-radius: 999px; padding: 2px 8px; }
+  .turn.playing { border-color: var(--acc); }
+  .turn.playing::after { content: ""; display: block; height: 2px; margin-top: 10px;
+    border-radius: 2px; background: linear-gradient(90deg, var(--acc) 0 62%, var(--bd) 62% 100%); }
+  .interim { min-height: 22px; padding: 0 20px 12px; color: var(--warn);
+    font-size: 12px; max-width: 980px; margin: 0 auto; width: 100%; }
+  .placeholder { text-align: center; color: var(--dim); margin-top: 40px; font-size: 13px; }
+  .placeholder .sub { font-size: 11px; }
 
-/* ── CHAT ── */
-.chat-area { flex: 1; min-height: 0; display: flex; flex-direction: column; }
-.chat-scroll {
-  flex: 1; overflow-y: auto;
-  padding: 12px 16px 8px;
-  display: flex; flex-direction: column; gap: 10px;
-  -webkit-overflow-scrolling: touch;
-}
-.chat-scroll:empty::after {
-  content: 'Connect, then tap 🎤 to speak';
-  color: var(--text3); font-size: 13px;
-  text-align: center; margin-top: 48px;
-}
-.msg {
-  max-width: 88%; padding: 10px 14px;
-  border-radius: 14px; font-size: 14px; line-height: 1.5;
-  animation: fadeUp 0.2s ease;
-}
-@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-.msg.user { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 4px; }
-.msg.trans { align-self: flex-start; background: var(--surface2); color: var(--text); border-bottom-left-radius: 4px; }
-.msg .label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; opacity: 0.6; margin-bottom: 3px; }
-.msg .meta { font-size: 10px; color: var(--text3); margin-top: 5px; display: flex; gap: 6px; }
-.msg .badge { padding: 1px 7px; border-radius: 8px; font-size: 9px; font-weight: 600; background: rgba(255,255,255,0.12); }
-.msg.trans .badge { background: rgba(99,102,241,0.2); color: var(--accent2); }
-.interim {
-  padding: 2px 16px 4px; font-size: 12px; font-style: italic;
-  color: var(--text3); min-height: 18px; flex-shrink: 0;
-}
-.interim.hidden { visibility: hidden; }
+  /* ── rail (desktop >= 1000px) ──────────────────────── */
+  .rail { border-left: 1px solid var(--bd); background: var(--el);
+    padding: 16px 14px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
+  .rail h4 { margin: 0 0 8px; font-size: 10px; letter-spacing: 2px; color: var(--dim); text-transform: uppercase; }
+  .rail .block { border: 1px solid var(--bd); border-radius: 10px; background: var(--el2); padding: 12px; }
+  .rail .big-state { font-size: 13px; letter-spacing: 1.5px; color: var(--ink); }
+  .rail .hint2 { display: block; color: var(--dim); font-size: 10px; margin-top: 5px; }
+  .seg { display: flex; gap: 4px; }
+  .seg button { flex: 1; background: var(--el2); border: 1px solid var(--bd); color: var(--mut);
+    border-radius: 7px; padding: 10px 4px; font-size: 11px; min-height: 44px; }
+  .seg button.active { background: var(--acc); border-color: var(--acc); color: var(--acc-ink); font-weight: 700; }
+  .field { width: 100%; background: var(--el2); border: 1px solid var(--bd); color: var(--ink);
+    border-radius: 7px; padding: 11px 12px; font: inherit; font-size: 12px; }
+  .field::placeholder { color: var(--dim); }
+  .row { margin-bottom: 13px; }
+  .row:last-child { margin-bottom: 0; }
+  .row label { display: block; font-size: 9px; letter-spacing: 1.5px; color: var(--mut);
+    margin-bottom: 6px; text-transform: uppercase; }
 
-/* ── BOTTOM BAR ── */
-.bottom-bar {
-  height: var(--bottom-bar-h);
-  padding-bottom: var(--safe-bottom);
-  padding-left: 12px; padding-right: 12px;
-  display: flex; align-items: center; gap: 8px;
-  border-top: 1px solid var(--border);
-  flex-shrink: 0;
-  background: var(--bg);
-  z-index: 10;
-}
-.mic-btn-wrap { position: relative; flex-shrink: 0; }
-.mic-btn {
-  width: 52px; height: 52px; border-radius: 50%;
-  border: none; font-size: 24px;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s;
-  background: var(--accent); color: white;
-  box-shadow: 0 4px 16px rgba(99,102,241,0.3);
-}
-.mic-btn:active { transform: scale(0.92); }
-.mic-btn.recording { background: var(--red); box-shadow: 0 4px 16px rgba(239,68,68,0.3); }
-.mic-btn:disabled { opacity: 0.35; box-shadow: none; }
-.mic-pulse {
-  position: absolute; inset: -4px; border-radius: 50%;
-  border: 2px solid var(--red); opacity: 0;
-  animation: micPulse 1.2s ease infinite;
-}
-@keyframes micPulse { 0%,100%{opacity:0;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.1)} }
-.bottom-info { flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; }
-.bottom-label { font-size: 11px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bottom-label.active { color: var(--red); font-weight: 600; }
-.bottom-meter { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
-.bottom-meter .fill { height:100%; width:0%; background:linear-gradient(90deg,var(--green),var(--amber),var(--red)); border-radius:2px; transition:width 0.08s; }
+  /* ── dock ──────────────────────────────────────────── */
+  .dock { flex-shrink: 0; border-top: 1px solid var(--bd);
+    padding: 10px 20px calc(10px + env(safe-area-inset-bottom, 0px)); }
+  .meter { height: 3px; background: var(--el2); border-radius: 2px;
+    max-width: 560px; margin: 0 auto 12px; overflow: hidden; }
+  .meter .fill { height: 100%; width: 0; background: var(--acc); border-radius: 2px; }
+  body.recording .meter .fill { animation: meter 1.1s ease-in-out infinite alternate; }
+  @keyframes meter { from { width: 22%; } to { width: 68%; } }
+  .dock-row { display: flex; align-items: center; justify-content: center;
+    gap: 14px; max-width: 560px; margin: 0 auto; }
+  .conn { background: none; border: 1px solid var(--bd2); color: var(--mut); border-radius: 8px;
+    padding: 11px 16px; font-size: 10px; letter-spacing: 1.5px; min-height: 44px; }
+  .conn.on { color: var(--brass); border-color: var(--brass); }
+  .mic { width: 56px; height: 56px; border-radius: 50%; border: 1px solid var(--bd2);
+    background: var(--el2); color: var(--mut); display: flex; align-items: center;
+    justify-content: center; position: relative; flex-shrink: 0; }
+  .mic:disabled { opacity: .45; cursor: not-allowed; }
+  .mic svg { width: 22px; height: 22px; }
+  body.recording .mic { background: var(--acc); border-color: var(--acc); color: var(--acc-ink); }
+  body.recording .mic::after { content: ""; position: absolute; inset: -6px; border-radius: 50%;
+    border: 1px solid var(--acc); opacity: .6; animation: ring 1.4s ease-out infinite; }
+  @keyframes ring { from { transform: scale(.9); opacity: .7; } to { transform: scale(1.35); opacity: 0; } }
+  .dock-status { color: var(--mut); font-size: 10px; letter-spacing: 1px; min-width: 110px; text-align: left; }
 
-/* ── DRAWER ── */
-.drawer-overlay {
-  position: fixed; inset: 0; z-index: 100;
-  background: rgba(0,0,0,0.5);
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.25s;
-}
-.drawer-overlay.open { opacity: 1; pointer-events: auto; }
-.drawer {
-  position: fixed; top: 0; right: 0; bottom: 0;
-  width: 340px; max-width: 88vw;
-  background: var(--surface);
-  z-index: 101;
-  transform: translateX(100%);
-  transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
-  display: flex; flex-direction: column;
-  border-left: 1px solid var(--border);
-}
-.drawer.open { transform: translateX(0); }
-.drawer-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 16px 12px;
-  padding-top: calc(var(--safe-top) + 8px);
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.drawer-header h2 { font-size: 17px; font-weight: 700; }
-.close-btn {
-  width: 36px; height: 36px; border: none; border-radius: 8px;
-  background: transparent; color: var(--text2); font-size: 22px;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-}
-.close-btn:active { background: var(--surface2); }
-.drawer-scroll { flex:1; overflow-y:auto; padding:8px 16px 24px; -webkit-overflow-scrolling:touch; }
+  /* ── setup card (floats, never dims) ───────────────── */
+  .setup { position: absolute; inset: 0; z-index: 30; display: flex;
+    align-items: center; justify-content: center; padding: 20px; background: transparent; }
+  .setup-inner { width: 100%; max-width: 520px; border: 1px solid var(--bd2);
+    border-radius: 12px; background: var(--el); padding: 26px;
+    box-shadow: 0 30px 80px rgba(0,0,0,.45); }
+  .eyebrow { color: var(--acc); font-size: 10px; letter-spacing: 3px; margin-bottom: 10px; }
+  .setup-inner h1 { margin: 0 0 6px; font-size: 22px; letter-spacing: -.5px; color: var(--ink); font-weight: 700; }
+  .setup-inner .sub { margin: 0 0 22px; color: var(--mut); font-size: 12px; max-width: 42ch; }
+  .start { width: 100%; background: var(--acc); color: var(--acc-ink); border: none; border-radius: 9px;
+    padding: 15px; font-size: 13px; font-weight: 700; letter-spacing: 2px; margin-top: 4px; min-height: 48px; }
+  .start:active { transform: scale(.985); }
+  .ghost { width: 100%; background: none; border: none; color: var(--mut); font-size: 10px;
+    letter-spacing: 1px; padding: 12px; margin-top: 2px; text-decoration: underline; text-underline-offset: 3px; }
+  body.live .setup { display: none; }
 
-/* ── DRAWER SECTIONS ── */
-.d-section { margin-bottom: 14px; }
-.d-section:last-child { margin-bottom: 0; }
-.d-section h3 {
-  font-size: 12px; font-weight: 600; text-transform: uppercase;
-  letter-spacing: 0.6px; color: var(--text3);
-  margin-bottom: 6px;
-}
-.d-card { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px; }
-.d-card .row { margin-bottom:10px; }
-.d-card .row:last-child { margin-bottom:0; }
-.d-card label { display:block; font-size:11px; color:var(--text2); margin-bottom:3px; font-weight:500; }
-.d-card select, .d-card input[type="text"], .d-card textarea {
-  width:100%; padding:7px 10px;
-  background:var(--surface2); border:1px solid var(--border);
-  border-radius:7px; color:var(--text); font-size:13px; outline:none;
-  transition:border-color 0.15s;
-}
-.d-card textarea { min-height: 60px; resize: vertical; }
-.d-card select:focus, .d-card input:focus, .d-card textarea:focus { border-color: var(--accent); }
+  /* ── drawer (settings) ─────────────────────────────── */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 40;
+    opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .overlay.open { opacity: 1; pointer-events: auto; }
+  .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 370px; max-width: 94vw;
+    background: var(--el); border-left: 1px solid var(--bd2); transform: translateX(102%);
+    transition: transform .25s cubic-bezier(.16,1,.3,1); display: flex; flex-direction: column; z-index: 50; }
+  .drawer.open { transform: none; }
+  .drawer .dh { display: flex; align-items: center; justify-content: space-between;
+    padding: 15px 18px; border-bottom: 1px solid var(--bd); }
+  .drawer .dh h2 { margin: 0; font-size: 12px; letter-spacing: 2px; }
+  .drawer .dh button { background: none; border: 1px solid var(--bd); color: var(--mut);
+    border-radius: 7px; padding: 7px 11px; font-size: 10px; min-height: 40px; }
+  .drawer .ds { flex: 1; overflow-y: auto; padding: 16px 18px 28px; }
+  .d-group { margin-bottom: 22px; }
+  .d-group h3 { margin: 0 0 9px; font-size: 10px; letter-spacing: 2px; color: var(--acc); text-transform: uppercase; }
+  .d-card { border: 1px solid var(--bd); border-radius: 10px; background: var(--el2); padding: 13px; }
+  .d-card select, .d-card input, .d-card textarea { width: 100%; background: var(--el);
+    border: 1px solid var(--bd); color: var(--ink); border-radius: 7px; padding: 10px; font: inherit; font-size: 11px; }
+  .d-card textarea { resize: vertical; min-height: 66px; }
+  .slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .slider-row span { color: var(--mut); font-size: 10px; width: 86px; flex-shrink: 0; }
+  .slider-row input[type=range] { flex: 1; accent-color: var(--acc); min-height: 40px; }
+  .toggle-group { display: flex; gap: 4px; }
+  .toggle-group button { flex: 1; background: var(--el); border: 1px solid var(--bd);
+    color: var(--mut); border-radius: 7px; padding: 11px 6px; font-size: 11px; }
+  .toggle-group button.active { background: var(--acc); border-color: var(--acc); color: var(--acc-ink); font-weight: 700; }
+  .mode-desc { margin-top: 8px; font-size: 10px; color: var(--dim); }
+  .drawer-live { display: none; }
 
-.toggle-group { display:flex; background:var(--surface2); border-radius:8px; overflow:hidden; border:1px solid var(--border); }
-.toggle-group button { flex:1; padding:7px 8px; border:none; background:transparent; color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; }
-.toggle-group button.active { background:var(--accent); color:white; }
-.dir-group { display:flex; gap:5px; }
-.dir-group button { flex:1; padding:6px; border:1px solid var(--border); border-radius:7px; background:transparent; color:var(--text2); font-size:11px; font-weight:600; cursor:pointer; transition:all 0.15s; }
-.dir-group button.active { background:var(--accent); color:white; border-color:var(--accent); }
-.slider-row .slider-hdr { display:flex; justify-content:space-between; font-size:11px; color:var(--text2); }
-.slider-row input[type="range"] { width:100%; margin-top:3px; accent-color:var(--accent); background:transparent; -webkit-appearance:none; appearance:none; height:4px; background:var(--border); border-radius:2px; outline:none; }
-.slider-row input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:var(--accent); cursor:pointer; }
-.history-item { padding:6px 8px; border-radius:6px; font-size:12px; color:var(--text2); cursor:pointer; transition:background 0.15s; margin-bottom:3px; }
-.history-item:active { background:var(--surface2); }
-.history-item .h-date { font-size:10px; }
-.history-item .h-preview { color:var(--text3); margin-top:1px; font-size:11px; }
+  /* ── history panel (separate surface) ──────────────── */
+  .history { position: fixed; top: 0; right: 0; bottom: 0; width: 340px; max-width: 92vw;
+    background: var(--el); border-left: 1px solid var(--bd2); transform: translateX(102%);
+    transition: transform .25s cubic-bezier(.16,1,.3,1); display: flex; flex-direction: column; z-index: 50; }
+  .history.open { transform: none; }
+  .history .dh { display: flex; align-items: center; justify-content: space-between;
+    padding: 15px 18px; border-bottom: 1px solid var(--bd); }
+  .history .dh h2 { margin: 0; font-size: 12px; letter-spacing: 2px; }
+  .history .dh button { background: none; border: 1px solid var(--bd); color: var(--mut);
+    border-radius: 7px; padding: 7px 11px; font-size: 10px; min-height: 40px; }
+  .history .hs { flex: 1; overflow-y: auto; padding: 12px 16px; }
+  .history-item { border: 1px solid var(--bd); border-radius: 9px; background: var(--el2);
+    padding: 12px 14px; margin-bottom: 10px; cursor: pointer; }
+  .history-item:hover { border-color: var(--bd2); }
+  .history-item .h-date { font-size: 10px; color: var(--mut); letter-spacing: .5px; }
+  .history-item .h-preview { font-size: 10px; color: var(--dim); margin-top: 5px; }
+  .history .empty { font-size: 11px; color: var(--dim); padding: 8px 2px; }
 
-/* Mode-dependent visibility */
-.mode-pipeline, .mode-agent { display: none; }
-body.mode_pipeline .mode-pipeline { display: block; }
-body.mode_agent .mode-agent { display: block; }
-
-/* Desktop */
-@media (min-width: 900px) {
-  .mode-bar { display: none; }
-  .body-layout { display: grid; grid-template-columns: 1fr 320px; flex: 1; min-height: 0; }
-  .drawer-overlay, .drawer { display: none; }
-  .sidebar-desktop { border-left:1px solid var(--border); overflow-y:auto; padding:12px 14px; display:flex; flex-direction:column; gap:14px; background:var(--bg); }
-  .gear-btn { display: none; }
-}
-@media (max-width: 899px) {
-  .sidebar-desktop { display: none; }
-  .body-layout { display: flex; flex: 1; min-height: 0; }
-  .chat-area { flex: 1; }
-}
+  /* ── responsive ────────────────────────────────────── */
+  @media (max-width: 999px) {
+    .body-layout { grid-template-columns: 1fr; }
+    .rail { display: none; }
+    .drawer-live { display: block; }
+  }
+  @media (max-width: 639px) {
+    .board-grid { grid-template-columns: 1fr; }
+    .swap { display: none; }
+    .turn.en, .turn.ko { grid-column: 1; margin: 0; }
+    .status-chip { font-size: 0; padding: 6px 10px; }
+    .turnboard { padding: 12px 12px 6px; }
+    .drawer, .history { width: 100%; max-width: 100%; top: auto; bottom: 0; height: 86vh;
+      border-left: none; border-top: 1px solid var(--bd2); border-radius: 16px 16px 0 0;
+      transform: translateY(102%); }
+    .drawer.open, .history.open { transform: none; }
+    .setup-inner { padding: 20px 18px; }
+    .dock { padding-left: 12px; padding-right: 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    body.recording .mic::after { animation: none; display: none; }
+    body.recording .meter .fill { animation: none; width: 50%; }
+    .turn.playing::after { background: var(--acc); }
+    .drawer, .history, .overlay { transition: none; }
+  }
 </style>
 </head>
 <body>
 
 <!-- ═══ TOP BAR ═══ -->
-<div class="top-bar" id="topBar">
-  <h1>Honjang</h1>
-  <span class="sub">EN↔KO</span>
-  <span class="spacer"></span>
+<header class="topbar">
+  <div class="brand">HONJANG <span class="sub">EN ↔ KO</span></div>
   <div class="status-chip disconnected" id="statusChip">
-    <span class="status-dot red" id="statusDot"></span>
+    <span class="status-dot" id="statusDot"></span>
     <span id="statusLabel">Offline</span>
   </div>
-  <button class="gear-btn" id="gearBtn" onclick="openDrawer()" aria-label="Settings">⚙️</button>
-</div>
+  <button class="icon-btn" id="sessionsBtn">SESSIONS</button>
+  <button class="icon-btn" id="gearBtn">SETTINGS</button>
+</header>
 
-<!-- ═══ MODE CHIPS ═══ -->
-<div class="mode-bar" id="modeBar">
-  <button class="mode-chip active" data-mode="pipeline" onclick="setMode('pipeline')">Pipeline</button>
-  <button class="mode-chip" data-mode="raw_voice_agent" onclick="setMode('raw_voice_agent')">Voice Agent</button>
-</div>
-
-<!-- ═══ BODY ═══ -->
-<div class="body-layout">
-  <!-- CHAT -->
-  <div class="chat-area">
-    <div class="chat-scroll" id="chatScroll">
-      <div style="text-align:center;color:var(--text3);margin-top:36px;font-size:13px;">
-        Connect, then tap 🎤 to speak<br>
-        <span style="font-size:11px;">Speak English → hear Korean (honorific)</span>
+<!-- ═══ BODY: STAGE + RAIL ═══ -->
+<main class="body-layout">
+  <section class="stage">
+    <div class="turnboard" id="chatScroll">
+      <div class="board-grid" id="boardGrid">
+        <div class="col-h en">ENGLISH</div>
+        <div class="swap"><span class="dir" id="dirLabel">EN → KO</span></div>
+        <div class="col-h ko">한국어</div>
+        <div class="placeholder" style="grid-column:1/-1;">
+          Connect, then tap the mic to speak<br>
+          <span class="sub">Speak English, hear Korean (honorific)</span>
+        </div>
       </div>
     </div>
     <div class="interim hidden" id="interim">&nbsp;</div>
-    <div class="bottom-bar">
-      <div class="mic-btn-wrap">
-        <button class="mic-btn" id="micBtn" disabled onclick="toggleMic()" aria-label="Mic">
-          <span id="micIcon">🎤</span>
-        </button>
-        <div class="mic-pulse" id="micPulse"></div>
-      </div>
-      <div class="bottom-info">
-        <div class="bottom-label" id="statusLabel2">Not connected</div>
-        <div class="bottom-meter"><div class="fill" id="volumeFill"></div></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-        <button id="connBtn" onclick="toggleConnection()" style="padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;">Connect</button>
+  </section>
+
+  <!-- RAIL: live essentials only (>= 1000px) -->
+  <aside class="rail" id="rail">
+    <div class="block">
+      <h4>Status</h4>
+      <div class="big-state" id="railState">Offline</div>
+      <span class="hint2" id="railHint">Connect to start</span>
+    </div>
+    <div class="block">
+      <h4>Direction</h4>
+      <div class="seg" id="dirGroupDesk">
+        <button data-dir="auto" class="active">AUTO</button>
+        <button data-dir="en_to_ko">EN → KO</button>
+        <button data-dir="ko_to_en">KO → EN</button>
       </div>
     </div>
+    <div class="block">
+      <h4>Politeness</h4>
+      <select class="field" id="politeD">
+        <option value="honorific">Honorific (존댓말)</option>
+        <option value="formal">Formal (하십시오체)</option>
+        <option value="polite">Polite (해요체)</option>
+        <option value="casual">Casual (반말)</option>
+      </select>
+    </div>
+  </aside>
+</main>
+
+<!-- ═══ DOCK ═══ -->
+<footer class="dock">
+  <div class="meter"><div class="fill" id="volumeFill"></div></div>
+  <div class="dock-row">
+    <button class="conn" id="connBtn">CONNECT</button>
+    <button class="mic" id="micBtn" disabled aria-label="Mic">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <rect x="9" y="3" width="6" height="11" rx="3"></rect>
+        <path d="M5 11a7 7 0 0 0 14 0"></path>
+        <line x1="12" y1="18" x2="12" y2="21"></line>
+      </svg>
+    </button>
+    <div class="dock-status" id="statusLabel2">Not connected</div>
   </div>
+</footer>
 
-  <!-- ═══ DESKTOP SIDEBAR ═══ -->
-  <div class="sidebar-desktop" id="sidebarDesktop">
-    <!-- ── PIPELINE CONFIG ── -->
-    <div class="d-section mode-pipeline" id="pipeSide">
-      <h3>Translation Config</h3>
+<!-- ═══ SETUP CARD ═══ -->
+<section class="setup" id="setupCard">
+  <div class="setup-inner">
+    <div class="eyebrow">FRESH SESSION</div>
+    <h1>Talk with your senior</h1>
+    <p class="sub">English and Korean, honorific-aware. Mic permission is requested when you press Start.</p>
+    <div class="row"><label>Direction</label>
+      <div class="seg" id="dirGroupSetup">
+        <button data-dir="auto" class="active">AUTO</button>
+        <button data-dir="en_to_ko">EN → KO</button>
+        <button data-dir="ko_to_en">KO → EN</button>
+      </div>
+    </div>
+    <div class="row"><label>Politeness</label>
+      <select class="field" id="politeSetup">
+        <option value="honorific">Honorific (존댓말)</option>
+        <option value="formal">Formal (하십시오체)</option>
+        <option value="polite">Polite (해요체)</option>
+        <option value="casual">Casual (반말)</option>
+      </select>
+    </div>
+    <div class="row"><label>Your role</label><input class="field" id="userRoleSetup" placeholder="junior engineer"></div>
+    <div class="row"><label>Senior's name</label><input class="field" id="seniorRoleSetup" placeholder="선배님"></div>
+    <div class="row"><label>Context</label><input class="field" id="contextSetup" placeholder="project standup"></div>
+    <button class="start" id="startBtn">START</button>
+    <button class="ghost" id="setupAdvBtn">ADVANCED SETTINGS</button>
+  </div>
+</section>
+
+<!-- ═══ SETTINGS DRAWER ═══ -->
+<div class="overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="dh"><h2>SETTINGS</h2><button id="drawerClose">CLOSE</button></div>
+  <div class="ds">
+    <div class="d-group drawer-live" id="liveGroup">
+      <h3>Live</h3>
       <div class="d-card">
-        <div class="row"><label>Direction</label><div class="dir-group" id="dirGroupDesk">
-          <button data-dir="auto" class="active" onclick="setDirection('auto')">🌐 Auto</button>
-          <button data-dir="en_to_ko" onclick="setDirection('en_to_ko')">🇺🇸→🇰🇷</button>
-          <button data-dir="ko_to_en" onclick="setDirection('ko_to_en')">🇰🇷→🇺🇸</button>
-        </div></div>
-        <div class="row"><label>Politeness</label><select id="politeD" onchange="sendSettingsDelayed()">
-          <option value="honorific">Honorific (존댓말)</option>
-          <option value="formal">Formal (하십시오체)</option>
-          <option value="polite">Polite (해요체)</option>
-          <option value="casual">Casual (반말)</option>
-        </select></div>
-        <div class="row"><label>Your Name/Role</label><input type="text" id="userRoleD" placeholder="e.g. junior engineer" onchange="sendSettingsDelayed()"></div>
-        <div class="row"><label>Senior's Name</label><input type="text" id="seniorRoleD" placeholder="e.g. 선배님" onchange="sendSettingsDelayed()"></div>
-        <div class="row"><label>Context</label><input type="text" id="contextD" placeholder="e.g. project standup" onchange="sendSettingsDelayed()"></div>
+        <div class="row"><label>Direction</label>
+          <div class="seg" id="dirGroupMob">
+            <button data-dir="auto" class="active">AUTO</button>
+            <button data-dir="en_to_ko">EN → KO</button>
+            <button data-dir="ko_to_en">KO → EN</button>
+          </div>
+        </div>
+        <div class="row"><label>Politeness</label>
+          <select class="field" id="politeM">
+            <option value="honorific">Honorific (존댓말)</option>
+            <option value="formal">Formal (하십시오체)</option>
+            <option value="polite">Polite (해요체)</option>
+            <option value="casual">Casual (반말)</option>
+          </select>
+        </div>
       </div>
     </div>
 
-    <!-- ── AGENT CONFIG ── -->
-    <div class="d-section mode-agent" id="agentSide">
-      <h3>Agent Config</h3>
+    <div class="d-group">
+      <h3>Mode</h3>
       <div class="d-card">
-        <div class="row"><label>Agent Role</label><select id="agentRoleD" onchange="sendSettingsDelayed()">
-          <option value="interpreter">Interpreter — translates between you two</option>
-          <option value="assistant">Assistant — helps you communicate</option>
-          <option value="conversational">Conversational — chats freely</option>
-        </select></div>
-        <div class="row"><label>System Prompt</label><textarea id="agentPromptD" placeholder="Describe how the agent should behave..." onchange="sendSettingsDelayed()">You are a helpful voice agent facilitating communication between an English speaker and their Korean senior colleague. Always be polite, respectful, and use appropriate honorifics (존댓말).</textarea></div>
-        <div class="row"><label>Language Style</label><select id="agentStyleD" onchange="sendSettingsDelayed()">
-          <option value="honorific_always">Always honorific (존댓말)</option>
-          <option value="auto">Auto-detect from context</option>
-          <option value="casual">Casual friendly (반말)</option>
-        </select></div>
+        <div class="toggle-group" id="modeGroup">
+          <button data-mode="pipeline" class="active">Pipeline</button>
+          <button data-mode="raw_voice_agent">Voice Agent</button>
+        </div>
+        <div class="mode-desc" id="modeDescMob">STT → LLM → TTS per turn</div>
+      </div>
+    </div>
+
+    <div class="d-group mode-pipeline">
+      <h3>Translation</h3>
+      <div class="d-card">
+        <div class="row"><label>Politeness</label>
+          <select class="field" id="politeDrawer">
+            <option value="honorific">Honorific (존댓말)</option>
+            <option value="formal">Formal (하십시오체)</option>
+            <option value="polite">Polite (해요체)</option>
+            <option value="casual">Casual (반말)</option>
+          </select>
+        </div>
+        <div class="row"><label>Your role</label><input class="field" id="userRoleM" placeholder="junior engineer"></div>
+        <div class="row"><label>Senior's name</label><input class="field" id="seniorRoleM" placeholder="선배님"></div>
+        <div class="row"><label>Context</label><input class="field" id="contextM" placeholder="project standup"></div>
+      </div>
+    </div>
+
+    <div class="d-group mode-agent">
+      <h3>Agent behavior</h3>
+      <div class="d-card">
+        <div class="row"><label>Agent role</label>
+          <select class="field" id="agentRoleM">
+            <option value="interpreter">Interpreter (translates between you two)</option>
+            <option value="assistant">Assistant (helps you communicate)</option>
+            <option value="conversational">Conversational (chats freely)</option>
+          </select>
+        </div>
+        <div class="row"><label>System prompt</label>
+          <textarea id="agentPromptM" placeholder="Describe how the agent should behave...">You are a helpful voice agent facilitating communication between an English speaker and their Korean senior colleague. Always be polite, respectful, and use appropriate honorifics (존댓말).</textarea>
+        </div>
+        <div class="row"><label>Language style</label>
+          <select class="field" id="agentStyleM">
+            <option value="honorific_always">Always honorific (존댓말)</option>
+            <option value="auto">Auto-detect from context</option>
+            <option value="casual">Casual friendly (반말)</option>
+          </select>
+        </div>
         <div class="row"><label>Temperature</label>
-          <div class="slider-row" style="margin-top:2px;">
-            <div class="slider-hdr"><span>Creative</span><span id="tempValD">0.7</span></div>
-            <input type="range" id="tempD" min="0.1" max="1.5" step="0.05" value="0.7" oninput="byId('tempValD').textContent=this.value;sendSettingsDelayed()">
+          <div class="slider-row">
+            <span>Creative</span>
+            <input type="range" id="tempM" min="0.1" max="1.5" step="0.05" value="0.7"
+              oninput="byId('tempValM').textContent=this.value;sendSettingsDelayed()">
+            <span id="tempValM" style="width:auto;">0.7</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ── COMMON: LLM MODEL ── -->
-    <div class="d-section">
-      <h3>LLM Model</h3>
+    <div class="d-group">
+      <h3>Provider</h3>
       <div class="d-card">
-        <select id="llmModelD" onchange="sendSettingsDelayed()">
-          <option value="google/gemini-3.1-flash-lite">Gemini 3.1 Flash Lite</option>
-          <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
-          <option value="anthropic/claude-sonnet-4">Claude Sonnet 4</option>
-          <option value="google/gemini-2.0-flash">Gemini 2.0 Flash</option>
-        </select>
+        <div class="row"><label>LLM model</label>
+          <select class="field" id="llmModelM">
+            <option value="google/gemini-3.1-flash-lite">Gemini 3.1 Flash Lite</option>
+            <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
+            <option value="anthropic/claude-sonnet-4">Claude Sonnet 4</option>
+            <option value="google/gemini-2.0-flash">Gemini 2.0 Flash</option>
+          </select>
+        </div>
+        <div class="row"><label>TTS model</label>
+          <select class="field" id="ttsModelM">
+            <option value="eleven_flash_v2_5">ElevenLabs Flash 2.5</option>
+            <option value="eleven_multilingual_v2">Multilingual v2</option>
+            <option value="eleven_turbo_v2_5">Turbo 2.5</option>
+          </select>
+        </div>
+        <div class="row"><label>Voice ID</label><input class="field" id="voiceIdM" placeholder="ElevenLabs voice ID"></div>
       </div>
     </div>
 
-    <!-- ── COMMON: TTS ── -->
-    <div class="d-section">
-      <h3>TTS</h3>
-      <div class="d-card">
-        <div class="row"><label>Model</label><select id="ttsModelD" onchange="sendSettingsDelayed()">
-          <option value="eleven_flash_v2_5">ElevenLabs Flash 2.5</option>
-          <option value="eleven_multilingual_v2">Multilingual v2</option>
-          <option value="eleven_turbo_v2_5">Turbo 2.5</option>
-        </select></div>
-        <div class="row"><label>Voice ID</label><input type="text" id="voiceIdD" placeholder="ElevenLabs voice ID" onchange="sendSettingsDelayed()"></div>
-      </div>
-    </div>
-
-    <!-- ── COMMON: VAD ── -->
-    <div class="d-section">
+    <div class="d-group">
       <h3>VAD</h3>
       <div class="d-card">
-        <div class="slider-row"><div class="slider-hdr"><span>Activation</span><span id="vadTD">0.6</span></div><input type="range" id="vadTD" min="0.1" max="0.9" step="0.05" value="0.6" oninput="byId('vadTD').textContent=this.value;syncVadSlider(this)"></div>
-        <div class="slider-row"><div class="slider-hdr"><span>Min Silence</span><span id="vadSD">450</span></div><input type="range" id="vadSD" min="100" max="2000" step="50" value="450" oninput="byId('vadSD').textContent=this.value;syncVadSlider(this)"></div>
-        <div class="slider-row"><div class="slider-hdr"><span>Pause</span><span id="vadPD">1.2</span></div><input type="range" id="vadPD" min="0.3" max="3.0" step="0.1" value="1.2" oninput="byId('vadPD').textContent=this.value;syncVadSlider(this)"></div>
+        <div class="slider-row"><span>Activation</span>
+          <input type="range" id="vadTM" min="0.1" max="0.9" step="0.05" value="0.6"
+            oninput="byId('vadTM').textContent=this.value;syncVadSlider(this)">
+          <span id="vadTMv" style="width:auto;">0.6</span>
+        </div>
+        <div class="slider-row"><span>Min silence</span>
+          <input type="range" id="vadSM" min="100" max="2000" step="50" value="450"
+            oninput="byId('vadSM').textContent=this.value;syncVadSlider(this)">
+          <span id="vadSMv" style="width:auto;">450</span>
+        </div>
+        <div class="slider-row"><span>Pause</span>
+          <input type="range" id="vadPM" min="0.3" max="3.0" step="0.1" value="1.2"
+            oninput="byId('vadPM').textContent=this.value;syncVadSlider(this)">
+          <span id="vadPMv" style="width:auto;">1.2</span>
+        </div>
       </div>
-    </div>
-
-    <!-- ── COMMON: HISTORY ── -->
-    <div class="d-section">
-      <h3>History</h3>
-      <div class="d-card"><div id="historyD"><div style="font-size:11px;color:var(--text3);">No sessions</div></div>
-      <button style="width:100%;margin-top:6px;padding:5px;border:1px solid var(--border);border-radius:7px;background:transparent;color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;" onclick="refreshHistory()">Refresh</button></div>
     </div>
   </div>
 </div>
 
-<!-- ═══ MOBILE DRAWER ═══ -->
-<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
-<div class="drawer" id="drawer">
-  <div class="drawer-header">
-    <h2>Settings</h2>
-    <button class="close-btn" onclick="closeDrawer()">✕</button>
-  </div>
-  <div class="drawer-scroll">
-    <!-- Mode -->
-    <div class="d-section">
-      <h3>Mode</h3>
-      <div class="d-card">
-        <div class="toggle-group" id="modeGroupMob">
-          <button class="active" data-mode="pipeline" onclick="setMode('pipeline')">Pipeline</button>
-          <button data-mode="raw_voice_agent" onclick="setMode('raw_voice_agent')">Voice Agent</button>
-        </div>
-        <div style="margin-top:5px;font-size:10px;color:var(--text3);" id="modeDescMob">STT → LLM → TTS per turn</div>
-      </div>
-    </div>
-
-    <!-- ── PIPELINE: Translation Config ── -->
-    <div class="d-section mode-pipeline" id="pipeMob">
-      <h3>Translation Config</h3>
-      <div class="d-card">
-        <div class="row"><label>Direction</label><div class="dir-group" id="dirGroupMob">
-          <button data-dir="auto" class="active" onclick="setDirection('auto')">🌐 Auto</button>
-          <button data-dir="en_to_ko" onclick="setDirection('en_to_ko')">🇺🇸→🇰🇷</button>
-          <button data-dir="ko_to_en" onclick="setDirection('ko_to_en')">🇰🇷→🇺🇸</button>
-        </div></div>
-        <div class="row"><label>Politeness</label><select id="politeM" onchange="sendSettingsDelayed()">
-          <option value="honorific">Honorific (존댓말)</option>
-          <option value="formal">Formal (하십시오체)</option>
-          <option value="polite">Polite (해요체)</option>
-          <option value="casual">Casual (반말)</option>
-        </select></div>
-        <div class="row"><label>Your Name/Role</label><input type="text" id="userRoleM" placeholder="e.g. junior engineer" onchange="sendSettingsDelayed()"></div>
-        <div class="row"><label>Senior's Name</label><input type="text" id="seniorRoleM" placeholder="e.g. 선배님" onchange="sendSettingsDelayed()"></div>
-        <div class="row"><label>Context</label><input type="text" id="contextM" placeholder="e.g. project standup" onchange="sendSettingsDelayed()"></div>
-      </div>
-    </div>
-
-    <!-- ── AGENT: Agent Config ── -->
-    <div class="d-section mode-agent" id="agentMob">
-      <h3>Agent Config</h3>
-      <div class="d-card">
-        <div class="row"><label>Agent Role</label><select id="agentRoleM" onchange="sendSettingsDelayed()">
-          <option value="interpreter">Interpreter — translates between you two</option>
-          <option value="assistant">Assistant — helps you communicate</option>
-          <option value="conversational">Conversational — chats freely</option>
-        </select></div>
-        <div class="row"><label>System Prompt</label><textarea id="agentPromptM" placeholder="Describe how the agent should behave..." onchange="sendSettingsDelayed()">You are a helpful voice agent facilitating communication between an English speaker and their Korean senior colleague. Always be polite, respectful, and use appropriate honorifics (존댓말).</textarea></div>
-        <div class="row"><label>Language Style</label><select id="agentStyleM" onchange="sendSettingsDelayed()">
-          <option value="honorific_always">Always honorific (존댓말)</option>
-          <option value="auto">Auto-detect from context</option>
-          <option value="casual">Casual friendly (반말)</option>
-        </select></div>
-        <div class="row"><label>Temperature</label>
-          <div class="slider-row" style="margin-top:2px;">
-            <div class="slider-hdr"><span>Creative</span><span id="tempValM">0.7</span></div>
-            <input type="range" id="tempM" min="0.1" max="1.5" step="0.05" value="0.7" oninput="byId('tempValM').textContent=this.value;sendSettingsDelayed()">
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── COMMON: LLM Model ── -->
-    <div class="d-section">
-      <h3>LLM Model</h3>
-      <div class="d-card"><select id="llmModelM" onchange="sendSettingsDelayed()">
-        <option value="google/gemini-3.1-flash-lite">Gemini 3.1 Flash Lite</option>
-        <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
-        <option value="anthropic/claude-sonnet-4">Claude Sonnet 4</option>
-        <option value="google/gemini-2.0-flash">Gemini 2.0 Flash</option>
-      </select></div>
-    </div>
-
-    <!-- ── COMMON: TTS ── -->
-    <div class="d-section">
-      <h3>TTS</h3>
-      <div class="d-card">
-        <div class="row"><label>Model</label><select id="ttsModelM" onchange="sendSettingsDelayed()">
-          <option value="eleven_flash_v2_5">ElevenLabs Flash 2.5</option>
-          <option value="eleven_multilingual_v2">Multilingual v2</option>
-          <option value="eleven_turbo_v2_5">Turbo 2.5</option>
-        </select></div>
-        <div class="row"><label>Voice ID</label><input type="text" id="voiceIdM" placeholder="ElevenLabs voice ID" onchange="sendSettingsDelayed()"></div>
-      </div>
-    </div>
-
-    <!-- ── COMMON: VAD ── -->
-    <div class="d-section">
-      <h3>VAD</h3>
-      <div class="d-card">
-        <div class="slider-row"><div class="slider-hdr"><span>Activation</span><span id="vadTM">0.6</span></div><input type="range" id="vadTM" min="0.1" max="0.9" step="0.05" value="0.6" oninput="document.getElementById('vadTM').textContent=this.value;syncVadSlider(this)"></div>
-        <div class="slider-row"><div class="slider-hdr"><span>Min Silence</span><span id="vadSM">450</span></div><input type="range" id="vadSM" min="100" max="2000" step="50" value="450" oninput="document.getElementById('vadSM').textContent=this.value;syncVadSlider(this)"></div>
-        <div class="slider-row"><div class="slider-hdr"><span>Pause</span><span id="vadPM">1.2</span></div><input type="range" id="vadPM" min="0.3" max="3.0" step="0.1" value="1.2" oninput="document.getElementById('vadPM').textContent=this.value;syncVadSlider(this)"></div>
-      </div>
-    </div>
-
-    <!-- ── COMMON: History ── -->
-    <div class="d-section">
-      <h3>Session History</h3>
-      <div class="d-card">
-        <div id="historyM"><div style="font-size:11px;color:var(--text3);">No sessions</div></div>
-        <button style="width:100%;margin-top:6px;padding:5px;border:1px solid var(--border);border-radius:7px;background:transparent;color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;" onclick="refreshHistory()">Refresh</button>
-      </div>
-    </div>
-  </div>
+<!-- ═══ HISTORY PANEL (separate surface) ═══ -->
+<div class="overlay" id="histOverlay" onclick="closeHistory()"></div>
+<div class="history" id="historyPanel">
+  <div class="dh"><h2>SESSION HISTORY</h2><button id="histClose">CLOSE</button></div>
+  <div class="hs" id="historyM"><div class="empty">No sessions</div></div>
 </div>
 
 <script>
-const WS_URL = `wss://${location.host}/ws`;
+const WS_PROTO = location.protocol === 'https:' ? 'wss' : 'ws';
+const WS_URL = `${WS_PROTO}://${location.host}/ws`;
 let ws = null, sessionId = null, isConnected = false;
 let isMicActive = false, isRecording = false;
 let audioCtx = null, micStream = null, processor = null, micSource = null;
@@ -515,7 +472,7 @@ function toggleConnection() { isConnected ? disconnect() : connect(); }
 function connect() {
   setStatus('connecting');
   ws = new WebSocket(WS_URL);
-  ws.onopen = () => { isConnected=true; setStatus('connected'); byId('connBtn').textContent='Disconnect'; byId('micBtn').disabled=false; byId('statusLabel2').textContent='Connected'; sendSettings(); refreshHistory(); };
+  ws.onopen = () => { isConnected=true; setStatus('connected'); byId('connBtn').textContent='Disconnect'; byId('connBtn').classList.add('on'); byId('micBtn').disabled=false; byId('statusLabel2').textContent='Connected'; sendSettings(); refreshHistory(); };
   ws.onmessage = e => handleMsg(JSON.parse(e.data));
   ws.onclose = () => { if(isConnected) disconnect(); };
   ws.onerror = () => {};
@@ -524,14 +481,17 @@ function disconnect() {
   if(ws && ws.readyState===WebSocket.OPEN) ws.send(JSON.stringify({type:'session_end'}));
   if(ws) ws.close();
   ws=null; isConnected=false; sessionId=null;
-  setStatus('disconnected'); byId('connBtn').textContent='Connect'; byId('micBtn').disabled=true; byId('statusLabel2').textContent='Not connected';
+  setStatus('disconnected'); byId('connBtn').textContent='Connect'; byId('connBtn').classList.remove('on'); byId('micBtn').disabled=true; byId('statusLabel2').textContent='Not connected';
   stopMic();
 }
 function setStatus(state) {
   const c=byId('statusChip'),d=byId('statusDot'),l=byId('statusLabel');
   c.className='status-chip '+state;
-  d.className='status-dot '+(state==='connected'?'green':state==='connecting'?'amber':'red');
+  d.className='status-dot';
   l.textContent=state==='connected'?'Online':state==='connecting'?'Connecting...':'Offline';
+  const rs=byId('railState'), rh=byId('railHint');
+  if(rs) rs.textContent=l.textContent;
+  if(rh) rh.textContent=state==='connected'?'Ready to speak':state==='connecting'?'Connecting...':'Connect to start';
 }
 function sendWS(m) { if(ws&&ws.readyState===WebSocket.OPEN) ws.send(JSON.stringify(m)); }
 
@@ -543,17 +503,17 @@ function handleMsg(m) {
     case 'transcript_update': handleTranscript(m); break;
     case 'translation_result': handleTranslation(m); break;
     case 'audio_output': handleAudio(m); break;
-    case 'error': addSys('⚠️ '+m.message); break;
+    case 'error': addSys('Error: '+m.message); break;
   }
 }
 function handleTranscript(m) {
   const el=byId('interim');
   if(m.is_final) { if(m.text.trim()){ rmPH(); addMsg(m.text,'user',m.detected_language); } el.classList.add('hidden'); el.innerHTML='&nbsp;'; }
-  else { if(m.text.trim()){ el.classList.remove('hidden'); el.textContent='🎤 '+m.text; } }
+  else { if(m.text.trim()){ el.classList.remove('hidden'); el.textContent='Listening: '+m.text; } }
 }
 function handleTranslation(m) {
-  const dir=m.direction==='en_to_ko'?'🇺🇸→🇰🇷':'🇰🇷→🇺🇸';
-  addMsg(m.translated_text,'trans',dir+' · Orig: '+m.original_text.substring(0,40)+(m.original_text.length>40?'…':''));
+  const dir=m.direction==='en_to_ko'?'EN → KO':'KO → EN';
+  addMsg(m.translated_text,'trans',dir);
 }
 function handleAudio(m) { if(!m.audio&&m.is_final){setTTS(false);return;} setTTS(true); audioQ.push(b64AB(m.audio)); if(!isPlaying) playNext(); }
 function b64AB(b){const bin=atob(b),buf=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)buf[i]=bin.charCodeAt(i);return buf.buffer;}
@@ -567,12 +527,29 @@ function playNext() {
   const src=playCtx.createBufferSource(); src.buffer=ab; src.connect(playCtx.destination);
   src.onended=()=>playNext(); src.start();
 }
-function setTTS(on){byId('statusLabel2').textContent=on?'🔊 Speaking...':(isConnected?'Connected':'Not connected');}
+function setTTS(on){
+  byId('statusLabel2').textContent=on?'Speaking...':(isConnected?'Connected':'Not connected');
+  if(on){ const last=byId('boardGrid').querySelector('.turn.ko:last-of-type,.turn.en:last-of-type'); if(last) last.classList.add('playing'); }
+  else { byId('boardGrid').querySelectorAll('.playing').forEach(el=>el.classList.remove('playing')); }
+}
 
 // ═══ UI ═══
-function rmPH(){const s=byId('chatScroll'); if(s.children.length===1&&s.children[0].style.textAlign==='center') s.innerHTML='';}
-function addMsg(text,cls,meta){const d=document.createElement('div');d.className='msg '+cls;d.innerHTML='<div class="label">'+(cls==='user'?'You':'Translation')+'</div>'+esc(text)+(meta?'<div class="meta"><span class="badge">'+esc(meta)+'</span></div>':'');byId('chatScroll').appendChild(d);scrollChat();}
-function addSys(text){const d=document.createElement('div');d.style.cssText='text-align:center;font-size:11px;color:var(--text3);padding:4px;';d.textContent=text;byId('chatScroll').appendChild(d);scrollChat();}
+function rmPH(){const s=byId('chatScroll'); const ph=s.querySelector('.placeholder'); if(ph) ph.remove();}
+function addMsg(text,cls,meta){
+  const g=byId('boardGrid'); rmPH();
+  const d=document.createElement('div');
+  const isTrans = cls==='trans';
+  const langCol = isTrans ? (meta&&meta.indexOf('KO → EN')===0 ? 'en':'ko') : (meta==='ko'||meta==='ko-KR' ? 'ko':'en');
+  d.className='turn '+langCol;
+  const label = isTrans ? 'Translation' : (langCol==='en'?'You':'You');
+  d.innerHTML='<span class="label">'+label+'</span><p>'+esc(text)+'</p>'+(meta?'<div class="meta"><span class="badge">'+esc(meta)+'</span></div>':'');
+  g.appendChild(d); scrollChat();
+}
+function addSys(text){
+  const g=byId('boardGrid'); rmPH();
+  const d=document.createElement('div'); d.className='turn sys'; d.textContent=text;
+  g.appendChild(d); scrollChat();
+}
 function scrollChat(){requestAnimationFrame(()=>{byId('chatScroll').scrollTop=byId('chatScroll').scrollHeight;});}
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 
@@ -581,8 +558,8 @@ async function toggleMic(){isMicActive?stopMic():await startMic();}
 async function startMic() {
   try {
     micStream=await navigator.mediaDevices.getUserMedia({audio:true});
-    isMicActive=true; const mb=byId('micBtn'); mb.classList.add('recording'); mb.innerHTML='⏹';
-    byId('micPulse').classList.add('active');
+    isMicActive=true; isRecording=true; document.body.classList.add('recording');
+    byId('statusLabel2').textContent='Listening...';
     audioCtx=new(window.AudioContext||window.webkitAudioContext)({sampleRate:16000});
     micSource=audioCtx.createMediaStreamSource(micStream);
     const a=audioCtx.createAnalyser();a.fftSize=128;micSource.connect(a);
@@ -591,8 +568,7 @@ async function startMic() {
     processor=audioCtx.createScriptProcessor(4096,1,1);
     processor.onaudioprocess=e=>{if(!isConnected)return;const inp=e.inputBuffer.getChannelData(0);const i16=new Int16Array(inp.length);for(let i=0;i<inp.length;i++){const s=Math.max(-1,Math.min(1,inp[i]));i16[i]=s<0?s*0x8000:s*0x7FFF;}const bytes=new Uint8Array(i16.buffer);let bin='';for(let i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]);sendWS({type:'audio_chunk',audio:btoa(bin),sample_rate:16000});};
     micSource.connect(processor);processor.connect(audioCtx.destination);
-    byId('statusLabel2').textContent='🎤 Recording...';
-  } catch(e){addSys('⚠️ Mic error: '+e.message);stopMic();}
+  } catch(e){addSys('Mic error: '+e.message);stopMic();}
 }
 function stopMic() {
   if(processor){try{processor.disconnect()}catch(e){}processor=null;}
@@ -600,8 +576,8 @@ function stopMic() {
   if(audioCtx){audioCtx.close();audioCtx=null;}
   if(micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null;}
   if(volInterval){clearInterval(volInterval);volInterval=null;}
-  isMicActive=false;isRecording=false;
-  byId('volumeFill').style.width='0%';const mb=byId('micBtn');mb.classList.remove('recording');mb.innerHTML='🎤';byId('micPulse').classList.remove('active');
+  isMicActive=false;isRecording=false; document.body.classList.remove('recording');
+  byId('volumeFill').style.width='0%';
   byId('statusLabel2').textContent=isConnected?'Connected':'Not connected';
 }
 
@@ -609,9 +585,8 @@ function stopMic() {
 function setMode(mode) {
   currentMode = mode;
   const cls = mode === 'pipeline' ? 'mode_pipeline' : 'mode_agent';
-  document.body.className = cls;
+  document.body.className = document.body.className.replace(/mode_\w+/g,'').trim() + ' ' + cls;
   byId('modeDescMob').textContent = mode==='pipeline' ? 'STT → LLM → TTS per turn' : 'LLM responds with conversational context';
-  // Sync mode chips
   document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('active', b.dataset.mode===mode));
   sendWS({type:'mode_change', mode});
   sendSettings();
@@ -619,6 +594,7 @@ function setMode(mode) {
 function setDirection(dir) {
   currentDirection = dir;
   document.querySelectorAll('[data-dir]').forEach(b => b.classList.toggle('active', b.dataset.dir===dir));
+  byId('dirLabel').textContent = dir==='en_to_ko'?'EN → KO':dir==='ko_to_en'?'KO → EN':'EN ↔ KO';
   sendSettingsDelayed();
 }
 
@@ -627,28 +603,24 @@ function sendSettings() {
   if(!isConnected) return;
   const pipe = currentMode === 'pipeline';
   const m = { type:'settings_update' };
-  // LLM model (always included)
-  m.llm_model = byId('llmModelM')?.value || byId('llmModelD')?.value || 'google/gemini-3.1-flash-lite';
-  // TTS (always)
-  m.tts_model = byId('ttsModelM')?.value || byId('ttsModelD')?.value || 'eleven_flash_v2_5';
-  m.voice_id = (byId('voiceIdM')?.value || byId('voiceIdD')?.value || '').trim() || undefined;
-  // VAD
-  m.vad_min_silence_ms = parseInt(byId('vadSM')?.value || byId('vadSD')?.value || '450');
-  m.vad_pause_threshold = parseFloat(byId('vadPM')?.value || byId('vadPD')?.value || '1.2');
+  m.llm_model = byId('llmModelM')?.value || 'google/gemini-3.1-flash-lite';
+  m.tts_model = byId('ttsModelM')?.value || 'eleven_flash_v2_5';
+  m.voice_id = (byId('voiceIdM')?.value || '').trim() || undefined;
+  m.vad_min_silence_ms = parseInt(byId('vadSM')?.value || '450');
+  m.vad_pause_threshold = parseFloat(byId('vadPM')?.value || '1.2');
   m.vad_utterance_end_ms = 1200;
   m.vad_endpointing_ms = 450;
-  m.vad_activation_threshold = parseFloat(byId('vadTM')?.value || byId('vadTD')?.value || '0.6');
-  // Mode-specific
+  m.vad_activation_threshold = parseFloat(byId('vadTM')?.value || '0.6');
   if (pipe) {
-    m.politeness_level = byId('politeM')?.value || byId('politeD')?.value || 'honorific';
-    m.user_role = (byId('userRoleM')?.value || byId('userRoleD')?.value || '').trim() || undefined;
-    m.senior_role = (byId('seniorRoleM')?.value || byId('seniorRoleD')?.value || '').trim() || undefined;
-    m.context = (byId('contextM')?.value || byId('contextD')?.value || '').trim() || undefined;
+    m.politeness_level = byId('politeSetup')?.value || byId('politeDrawer')?.value || byId('politeM')?.value || byId('politeD')?.value || 'honorific';
+    m.user_role = (byId('userRoleSetup')?.value || byId('userRoleM')?.value || '').trim() || undefined;
+    m.senior_role = (byId('seniorRoleSetup')?.value || byId('seniorRoleM')?.value || '').trim() || undefined;
+    m.context = (byId('contextSetup')?.value || byId('contextM')?.value || '').trim() || undefined;
   } else {
-    m.agent_role = byId('agentRoleM')?.value || byId('agentRoleD')?.value || 'interpreter';
-    m.agent_prompt = (byId('agentPromptM')?.value || byId('agentPromptD')?.value || '').trim();
-    m.agent_style = byId('agentStyleM')?.value || byId('agentStyleD')?.value || 'honorific_always';
-    m.temperature = parseFloat(byId('tempM')?.value || byId('tempD')?.value || '0.7');
+    m.agent_role = byId('agentRoleM')?.value || 'interpreter';
+    m.agent_prompt = (byId('agentPromptM')?.value || '').trim();
+    m.agent_style = byId('agentStyleM')?.value || 'honorific_always';
+    m.temperature = parseFloat(byId('tempM')?.value || '0.7');
   }
   Object.keys(m).forEach(k=>m[k]===undefined&&delete m[k]);
   sendWS(m);
@@ -658,50 +630,72 @@ function sendSettingsDelayed() {
   settingsTimer = setTimeout(sendSettings, 300);
 }
 function syncVadSlider(el) {
-  const name = el.id.replace(/[DM]$/,''); // strip M/D suffix
-  const suffix = el.id.slice(-1); // M or D
-  const otherSuffix = suffix === 'M' ? 'D' : 'M';
-  const other = byId(name + otherSuffix);
-  if (other) other.value = el.value;
-  byId(name + suffix).textContent = el.value;
+  byId(el.id+'v').textContent = el.value;
   sendSettingsDelayed();
 }
 
-// ═══ DRAWER ═══
-function openDrawer(){byId('drawerOverlay').classList.add('open');byId('drawer').classList.add('open');document.body.style.overflow='hidden';}
-function closeDrawer(){byId('drawerOverlay').classList.remove('open');byId('drawer').classList.remove('open');document.body.style.overflow='';}
+// ═══ POLITENESS SYNC (rail / drawer / setup) ═══
+function syncPoliteness(from) {
+  ['politeD','politeM','politeDrawer','politeSetup'].forEach(id=>{
+    const o=byId(id); if(o && o!==from) o.value = from.value;
+  });
+  sendSettingsDelayed();
+}
+
+// ═══ DRAWER / HISTORY ═══
+function openDrawer(){byId('drawerOverlay').classList.add('open');byId('drawer').classList.add('open');}
+function closeDrawer(){byId('drawerOverlay').classList.remove('open');byId('drawer').classList.remove('open');}
+function openHistory(){byId('histOverlay').classList.add('open');byId('historyPanel').classList.add('open');refreshHistory();}
+function closeHistory(){byId('histOverlay').classList.remove('open');byId('historyPanel').classList.remove('open');}
 
 // ═══ HISTORY ═══
 async function refreshHistory(){
   try{
     const r=await fetch('/api/sessions');
     const s=await r.json();
-    ['historyM','historyD'].forEach(id=>{
-      const el=byId(id); if(!el) return;
-      if(!s.length){el.innerHTML='<div style="font-size:11px;color:var(--text3);">No sessions</div>';return;}
-      el.innerHTML=s.slice(0,20).map(ses=>'<div class="history-item" onclick="loadSession('+ses.id+')"><div class="h-date">#'+ses.id+' · '+new Date(ses.created_at||Date.now()).toLocaleString()+'</div><div class="h-preview">'+(ses.turn_count||0)+' turns</div></div>').join('');
-    });
+    const el=byId('historyM'); if(!el) return;
+    if(!s.length){el.innerHTML='<div class="empty">No sessions</div>';return;}
+    el.innerHTML=s.slice(0,20).map(ses=>'<div class="history-item" onclick="loadSession('+ses.id+')"><div class="h-date">#'+ses.id+' · '+new Date(ses.created_at||Date.now()).toLocaleString()+'</div><div class="h-preview">'+(ses.turn_count||0)+' turns</div></div>').join('');
   }catch(_){}
 }
 async function loadSession(id){
   try{
     const r=await fetch('/api/sessions/'+id+'/turns');
     const t=await r.json();
-    const s=byId('chatScroll'); s.innerHTML='<div style="text-align:center;font-size:11px;color:var(--text3);padding:6px;border-bottom:1px solid var(--border);margin-bottom:6px;">Session #'+id+'</div>';
+    const g=byId('boardGrid'); rmPH();
+    g.querySelectorAll('.turn').forEach(el=>el.remove());
+    const hdr=document.createElement('div'); hdr.className='turn sys'; hdr.textContent='Session #'+id;
+    g.appendChild(hdr);
     t.forEach(turn=>{
-      const dir=turn.direction==='en_to_ko'?'🇺🇸→🇰🇷':'🇰🇷→🇺🇸';
+      const dir=turn.direction==='en_to_ko'?'EN → KO':'KO → EN';
       addMsg(turn.original_text,'user',turn.detected_language);
       addMsg(turn.translated_text,'trans',dir);
     });
-    closeDrawer();
+    closeHistory();
   }catch(_){}
 }
 
 // ═══ KEYBOARD ═══
-document.addEventListener('keydown',e=>{if(['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName))return;if(e.code==='Space'&&!e.repeat){e.preventDefault();if(isConnected)toggleMic();}});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){ closeDrawer(); closeHistory(); return; }
+  if(['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName))return;
+  if(e.code==='Space'&&!e.repeat){e.preventDefault();if(isConnected)toggleMic();}
+});
 
 // ═══ BOOT ═══
-document.body.className = 'mode_pipeline';
+document.body.classList.add('mode_pipeline');
+setMode('pipeline');
+byId('startBtn').addEventListener('click', () => document.body.classList.add('live'));
+byId('setupAdvBtn').addEventListener('click', openDrawer);
+byId('sessionsBtn').addEventListener('click', openHistory);
+byId('gearBtn').addEventListener('click', openDrawer);
+byId('drawerClose').addEventListener('click', closeDrawer);
+byId('histClose').addEventListener('click', closeHistory);
+['politeD','politeM','politeDrawer','politeSetup'].forEach(id=>{
+  byId(id).addEventListener('change', e => syncPoliteness(e.target));
+});
+byId('connBtn').addEventListener('click', toggleConnection);
+byId('micBtn').addEventListener('click', toggleMic);
 refreshHistory();
 </script>
 </body>
